@@ -1,30 +1,147 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Menu, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
+
+// Constants
+const SCROLL_CONFIG = {
+  MAX_SCROLL: 200,
+  SCROLL_THRESHOLD: 0.1,
+  SHADOW_THRESHOLD: 0.3,
+} as const;
+
+const COLORS = {
+  DARK: {
+    ACTIVE: 'hsl(0,0%,90%)',
+    DEFAULT: 'hsl(0,0%,70%)',
+    LOGO: 'hsl(0,0%,85%)',
+  },
+  LIGHT: {
+    ACTIVE: 'hsl(0,0%,3.9%)',
+    DEFAULT: 'hsl(0,0%,25.1%)',
+    LOGO: 'hsl(0,0%,25.1%)',
+  },
+} as const;
+
+const SIZES = {
+  NAVBAR_HEIGHT: 64,
+  PILL_PADDING: 24,
+  LOGO_SIZE: { NORMAL: 24, COMPACT: 18 },
+  BUTTON_SIZE: { NORMAL: 40, COMPACT: 32 },
+  ICON_SIZE: { NORMAL: 20, COMPACT: 16 },
+  MOBILE_ICON_SIZE: { NORMAL: 24, COMPACT: 20 },
+} as const;
+
+// Types
+interface NavItem {
+  name: string;
+  href: string;
+}
+
+interface ScrollStyles {
+  width: string;
+  backgroundColor: string;
+  backdropFilter: string;
+  borderRadius: string;
+  border: string;
+  boxShadow: string;
+}
+
+interface ComponentSizes {
+  logoSize: number;
+  buttonSize: number;
+  iconSize: number;
+  mobileIconSize: number;
+  padding: number;
+}
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const { theme, toggleTheme } = useTheme();
 
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+  // Helper function to get text color
+  const getTextColor = useCallback((isActive: boolean): string => {
+    const colors = theme === 'dark' ? COLORS.DARK : COLORS.LIGHT;
+    return isActive ? colors.ACTIVE : colors.DEFAULT;
+  }, [theme]);
+
+  // Helper function to calculate dynamic styles based on scroll
+  const getScrollStyles = useMemo((): ScrollStyles => {
+    const isCompact = scrollProgress > SCROLL_CONFIG.SCROLL_THRESHOLD;
+    
+    // Use a single smooth progress curve for all transitions to eliminate jerky movement
+    const transitionProgress = Math.max(0, Math.min((scrollProgress - 0.02) / 0.8, 1)); // Start at 2%, complete at 82%
+    
+    // All transitions use the same easing curve
+    const easedProgress = transitionProgress * transitionProgress * (3 - 2 * transitionProgress); // Smooth S-curve
+    
+    // Width transition
+    const width = 100 - (easedProgress * 40); // 100% to 60%
+    
+    // Border radius transition
+    const borderRadius = easedProgress * 9999;
+    
+    // Background and blur transitions
+    const backgroundOpacity = Math.min(easedProgress * 0.4, 0.2); // Slightly stronger background
+    const blurAmount = easedProgress * 12;
+    
+    return {
+      width: `${width}%`,
+      backgroundColor: isCompact 
+        ? (theme === 'dark' 
+            ? `rgba(0, 0, 0, ${backgroundOpacity + 0.1})` 
+            : `rgba(255, 255, 255, ${backgroundOpacity + 0.1})`)
+        : 'transparent',
+      backdropFilter: isCompact ? `blur(${blurAmount}px)` : 'none',
+      borderRadius: `${borderRadius}px`,
+      border: 'none', // No border needed at any point
+      boxShadow: easedProgress > 0.7 // Shadow appears near the end for depth
+        ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+        : 'none'
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrollProgress, theme]);
+
+  // Helper function to get component sizes
+  const getComponentSizes = useMemo((): ComponentSizes => {
+    // Use the same smooth transition curve as the main styles
+    const transitionProgress = Math.max(0, Math.min((scrollProgress - 0.02) / 0.8, 1));
+    const easedProgress = transitionProgress * transitionProgress * (3 - 2 * transitionProgress);
+    
+    return {
+      logoSize: SIZES.LOGO_SIZE.NORMAL - (easedProgress * (SIZES.LOGO_SIZE.NORMAL - SIZES.LOGO_SIZE.COMPACT)),
+      buttonSize: SIZES.BUTTON_SIZE.NORMAL - (easedProgress * (SIZES.BUTTON_SIZE.NORMAL - SIZES.BUTTON_SIZE.COMPACT)),
+      iconSize: SIZES.ICON_SIZE.NORMAL - (easedProgress * (SIZES.ICON_SIZE.NORMAL - SIZES.ICON_SIZE.COMPACT)),
+      mobileIconSize: SIZES.MOBILE_ICON_SIZE.NORMAL - (easedProgress * (SIZES.MOBILE_ICON_SIZE.NORMAL - SIZES.MOBILE_ICON_SIZE.COMPACT)),
+      padding: easedProgress * SIZES.PILL_PADDING,
+    };
+  }, [scrollProgress]);
+
+  // Optimized scroll handler with throttling
+  const handleScroll = useCallback(() => {
+    const scrollY = window.scrollY;
+    const progress = Math.min(scrollY / SCROLL_CONFIG.MAX_SCROLL, 1);
+    setScrollProgress(progress);
   }, []);
 
-  // Handle theme toggle
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const throttledScroll = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 16); // ~60fps
+    };
+
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', throttledScroll);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [handleScroll]);
 
   // Navigation items
-  const navItems = [
+  const navItems: NavItem[] = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
     { name: 'Projects', href: '/projects' },
@@ -34,70 +151,129 @@ const Navbar = () => {
   // Current page (in real app, you'd get this from router)
   const [currentPage, setCurrentPage] = useState('Home');
 
+  // Reusable Rolling Text Component
+  const RollingText: React.FC<{ 
+    children: string; 
+    isActive: boolean; 
+    className?: string;
+  }> = ({ children, isActive, className = '' }) => (
+    <span 
+      className={`relative overflow-hidden transition-colors duration-200 group ${className}`}
+      style={{ color: getTextColor(isActive) }}
+      data-current={isActive}
+    >
+      <span className="block transition-transform duration-700 ease-out group-hover:-translate-y-full group-hover:opacity-0">
+        {children}
+      </span>
+      <span className="absolute top-full left-0 w-full block transition-transform duration-700 ease-out group-hover:-translate-y-full">
+        {children}
+      </span>
+    </span>
+  );
+
+  const scrollStyles = getScrollStyles;
+  const sizes = getComponentSizes;
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'bg-white/80 dark:bg-black/80 backdrop-blur-md shadow-lg' 
-        : 'bg-transparent'
-    }`}>
+    <nav 
+      className="fixed top-4 left-1/2 z-50 rounded-full bg-transparent transition-all duration-500 ease-out"
+      style={{
+        width: scrollStyles.width,
+        transform: 'translate(-50%, 0px)',
+        backgroundColor: scrollStyles.backgroundColor,
+        backdropFilter: scrollStyles.backdropFilter,
+        borderRadius: scrollStyles.borderRadius,
+        border: scrollStyles.border,
+        boxShadow: scrollStyles.boxShadow
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div 
+          className="flex items-center justify-between relative transition-all duration-500 ease-out"
+          style={{
+            height: SIZES.NAVBAR_HEIGHT,
+            paddingLeft: sizes.padding,
+            paddingRight: sizes.padding
+          }}
+        >
           
           {/* Logo - Left */}
-          <div className="flex-shrink-0">
-            <a href="/" className="text-2xl font-bold text-gray-900 dark:text-white hover:text-lime-400 dark:hover:text-lime-400 transition-colors duration-200">
+          <div className="flex-shrink-0 z-10">
+            <a 
+              href="/" 
+              className="font-bold hover:text-lime-400 transition-all duration-500 ease-out"
+              style={{ 
+                color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO,
+                fontSize: `${sizes.logoSize}px`
+              }}
+            >
               MS
             </a>
           </div>
 
           {/* Desktop Navigation - Center */}
-          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
-            <div className="flex items-center space-x-8">
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10">
+            <div className="flex items-center space-x-1">
               {navItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="relative flex items-center px-3 py-2 text-sm font-medium group"
+                  className="relative flex items-center px-3 py-2 text-sm font-medium transition-all duration-200"
                   onClick={() => setCurrentPage(item.name)}
                 >
                   {/* Active page indicator */}
                   {currentPage === item.name && (
-                    <div className="absolute -left-2 w-1.5 h-1.5 bg-lime-400 rounded-full"></div>
+                    <div className="absolute -left-1 w-2 h-2 bg-lime-400 rounded-full"></div>
                   )}
                   
-                  {/* Text with scroll animation */}
-                  <div className="relative overflow-hidden h-5">
-                    <span className="absolute inset-0 text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-out group-hover:-translate-y-full">
-                      {item.name}
-                    </span>
-                    <span className="absolute inset-0 text-gray-700 dark:text-gray-300 transition-transform duration-300 ease-out translate-y-full group-hover:translate-y-0">
-                      {item.name}
-                    </span>
-                  </div>
+                  {/* Text with rolling pin hover effect */}
+                  <RollingText 
+                    isActive={currentPage === item.name}
+                    className="ml-1"
+                  >
+                    {item.name}
+                  </RollingText>
                 </a>
               ))}
             </div>
           </div>
 
           {/* Theme Toggle & Mobile Menu - Right */}
-          <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
+          <div className="flex items-center space-x-4 z-10">
+            {/* Theme Toggle - Desktop Only */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-lime-400 dark:hover:text-lime-400 transition-colors duration-200"
+              className="hidden md:flex rounded-full bg-transparent border border-transparent hover:bg-neutral-500/10 hover:border-neutral-200/20 hover:backdrop-blur-md transition-all duration-500 items-center justify-center"
+              style={{ 
+                color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO,
+                width: `${sizes.buttonSize}px`,
+                height: `${sizes.buttonSize}px`
+              }}
               aria-label="Toggle theme"
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === 'dark' ? 
+                <Sun style={{ width: `${sizes.iconSize}px`, height: `${sizes.iconSize}px` }} /> : 
+                <Moon style={{ width: `${sizes.iconSize}px`, height: `${sizes.iconSize}px` }} />
+              }
             </button>
 
-            {/* Mobile menu button */}
+            {/* Mobile menu button - Always visible on mobile */}
             <div className="md:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-lime-400 dark:hover:text-lime-400 transition-colors duration-200"
+                className="inline-flex items-center justify-center transition-all duration-500"
+                style={{ 
+                  color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO,
+                  width: `${sizes.buttonSize}px`,
+                  height: `${sizes.buttonSize}px`,
+                  padding: scrollProgress > SCROLL_CONFIG.SCROLL_THRESHOLD ? '6px' : '8px'
+                }}
                 aria-label="Toggle menu"
               >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isOpen ? 
+                  <X style={{ width: `${sizes.mobileIconSize}px`, height: `${sizes.mobileIconSize}px` }} /> : 
+                  <Menu style={{ width: `${sizes.mobileIconSize}px`, height: `${sizes.mobileIconSize}px` }} />
+                }
               </button>
             </div>
           </div>
@@ -110,12 +286,31 @@ const Navbar = () => {
           ? 'max-h-96 opacity-100' 
           : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-white/90 dark:bg-black/90 backdrop-blur-md shadow-lg">
+        <div className="px-2 pt-2 pb-3 space-y-1 bg-neutral-100/80 dark:bg-neutral-950/80 backdrop-blur-md shadow-lg rounded-b-2xl">
+          {/* Theme Toggle in Mobile Menu */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center w-full px-3 py-3 text-base font-medium transition-colors duration-200 rounded-lg hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+            style={{ 
+              color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO
+            }}
+          >
+            <div className="flex items-center justify-center w-6 h-6 mr-3">
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </div>
+            <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          </button>
+          
+          {/* Divider */}
+          <div className="h-px bg-neutral-300/50 dark:bg-neutral-600/50 my-2"></div>
+          
+          {/* Navigation Items */}
           {navItems.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className="flex items-center text-gray-700 dark:text-gray-300 block px-3 py-2 text-base font-medium transition-colors duration-200"
+              className="flex items-center block px-3 py-2 text-base font-medium transition-colors duration-200 group rounded-lg hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+              data-current={currentPage === item.name}
               onClick={() => {
                 setIsOpen(false);
                 setCurrentPage(item.name);
@@ -123,9 +318,13 @@ const Navbar = () => {
             >
               {/* Active page indicator for mobile */}
               {currentPage === item.name && (
-                <div className="w-1.5 h-1.5 bg-lime-400 rounded-full mr-3"></div>
+                <div className="w-2 h-2 bg-lime-400 rounded-full mr-3"></div>
               )}
-              {item.name}
+              
+              {/* Text with rolling pin effect for mobile */}
+              <RollingText isActive={currentPage === item.name}>
+                {item.name}
+              </RollingText>
             </a>
           ))}
         </div>
