@@ -1,7 +1,14 @@
+import Hero from '@/components/Hero';
+
 export default function Home() {
   return (
-    <div className="min-h-screen pt-20">
-      <div className="p-8 max-w-4xl mx-auto">
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <Hero />
+
+      {/* Rest of the page content for testing scroll effects */}
+      <div className="pt-20">
+        <div className="p-8 max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-neutral-950 dark:text-neutral-300 mb-6">
           Welcome to Michael's Portfolio
         </h1>
@@ -104,6 +111,7 @@ export default function Home() {
             Scroll back up to see the navbar return to its full-width state.
           </p>
         </section>
+        </div>
       </div>
     </div>
   );

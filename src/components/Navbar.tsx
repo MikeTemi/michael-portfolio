@@ -21,6 +21,10 @@ const COLORS = {
     ACTIVE: 'hsl(0,0%,3.9%)',
     DEFAULT: 'hsl(0,0%,25.1%)',
     LOGO: 'hsl(0,0%,25.1%)',
+    // Darker colors for mobile light mode
+    MOBILE_LOGO: 'hsl(0,0%,10%)',
+    MOBILE_DEFAULT: 'hsl(0,0%,10%)',
+    MOBILE_INACTIVE: 'hsl(0,0%,45%)', // Lighter color for non-active mobile items
   },
 } as const;
 
@@ -62,8 +66,11 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
 
   // Helper function to get text color
-  const getTextColor = useCallback((isActive: boolean): string => {
+  const getTextColor = useCallback((isActive: boolean, isMobile: boolean = false): string => {
     const colors = theme === 'dark' ? COLORS.DARK : COLORS.LIGHT;
+    if (isMobile && theme === 'light') {
+      return isActive ? COLORS.LIGHT.MOBILE_DEFAULT : COLORS.LIGHT.MOBILE_INACTIVE;
+    }
     return isActive ? colors.ACTIVE : colors.DEFAULT;
   }, [theme]);
 
@@ -156,10 +163,11 @@ const Navbar = () => {
     children: string; 
     isActive: boolean; 
     className?: string;
-  }> = ({ children, isActive, className = '' }) => (
+    isMobile?: boolean;
+  }> = ({ children, isActive, className = '', isMobile = false }) => (
     <span 
       className={`relative overflow-hidden transition-colors duration-200 group ${className}`}
-      style={{ color: getTextColor(isActive) }}
+      style={{ color: getTextColor(isActive, isMobile) }}
       data-current={isActive}
     >
       <span className="block transition-transform duration-700 ease-out group-hover:-translate-y-full group-hover:opacity-0">
@@ -175,18 +183,19 @@ const Navbar = () => {
   const sizes = getComponentSizes;
 
   return (
-    <nav 
-      className="fixed top-4 left-1/2 z-50 rounded-full bg-transparent transition-all duration-500 ease-out"
-      style={{
-        width: scrollStyles.width,
-        transform: 'translate(-50%, 0px)',
-        backgroundColor: scrollStyles.backgroundColor,
-        backdropFilter: scrollStyles.backdropFilter,
-        borderRadius: scrollStyles.borderRadius,
-        border: scrollStyles.border,
-        boxShadow: scrollStyles.boxShadow
-      }}
-    >
+    <>
+      <nav 
+        className="fixed top-4 left-1/2 z-50 rounded-full bg-transparent transition-all duration-500 ease-out"
+        style={{
+          width: scrollStyles.width,
+          transform: 'translate(-50%, 0px)',
+          backgroundColor: scrollStyles.backgroundColor,
+          backdropFilter: scrollStyles.backdropFilter,
+          borderRadius: scrollStyles.borderRadius,
+          border: scrollStyles.border,
+          boxShadow: scrollStyles.boxShadow
+        }}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
           className="flex items-center justify-between relative transition-all duration-500 ease-out"
@@ -263,7 +272,7 @@ const Navbar = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center transition-all duration-500"
                 style={{ 
-                  color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO,
+                  color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.MOBILE_LOGO,
                   width: `${sizes.buttonSize}px`,
                   height: `${sizes.buttonSize}px`,
                   padding: scrollProgress > SCROLL_CONFIG.SCROLL_THRESHOLD ? '6px' : '8px'
@@ -279,20 +288,27 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      </nav>
 
-      {/* Mobile Navigation Menu */}
-      <div className={`md:hidden transition-all duration-300 ease-in-out ${
+      {/* Mobile Navigation Menu - Outside main nav to avoid scroll effects */}
+      <div className={`md:hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-40 w-[90%] max-w-sm transition-all duration-300 ease-in-out ${
         isOpen 
           ? 'max-h-96 opacity-100' 
           : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-neutral-100/80 dark:bg-neutral-950/80 backdrop-blur-md shadow-lg rounded-b-2xl">
+        <div className="px-2 pt-2 pb-3 space-y-1 backdrop-blur-md shadow-lg rounded-2xl"
+          style={{
+            backgroundColor: theme === 'dark' 
+              ? 'rgba(10, 10, 10, 0.3)' 
+              : 'rgba(255, 255, 255, 0.25)'
+          }}
+        >
           {/* Theme Toggle in Mobile Menu */}
           <button
             onClick={toggleTheme}
             className="flex items-center w-full px-3 py-3 text-base font-medium transition-colors duration-200 rounded-lg hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
             style={{ 
-              color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO
+              color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.MOBILE_LOGO
             }}
           >
             <div className="flex items-center justify-center w-6 h-6 mr-3">
@@ -322,14 +338,14 @@ const Navbar = () => {
               )}
               
               {/* Text with rolling pin effect for mobile */}
-              <RollingText isActive={currentPage === item.name}>
+              <RollingText isActive={currentPage === item.name} isMobile={true}>
                 {item.name}
               </RollingText>
             </a>
           ))}
         </div>
       </div>
-    </nav>
+    </>
   );
 };
 
