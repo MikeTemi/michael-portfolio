@@ -19,6 +19,7 @@ const Hero = () => {
     text: {
       light: isDarkMode ? '#a3a3a3' : '#404040',
       main: isDarkMode ? '#f5f5f5' : '#1f2937',
+      mainSecondary: isDarkMode ? 'hsl(0,0%,63.9%)' : '#1f2937', // New color for non-accent text in second text
     },
     background: {
       light: isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(255, 255, 255)',
@@ -144,7 +145,7 @@ const Hero = () => {
         {/* Second major text - Main statement */}
         <div className="mr-0 md:mr-[30vw] mt-8">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-            <span style={{ color: colors.text.main }}>
+            <span style={{ color: colors.text.mainSecondary }}>
               Learning out loud, <span style={{ color: colors.primary }}>building boldly</span>, and solving for the real world.
             </span>
           </h1>

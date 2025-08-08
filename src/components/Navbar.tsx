@@ -166,8 +166,15 @@ const Navbar = () => {
     isMobile?: boolean;
   }> = ({ children, isActive, className = '', isMobile = false }) => (
     <span 
-      className={`relative overflow-hidden transition-colors duration-200 group ${className}`}
-      style={{ color: getTextColor(isActive, isMobile) }}
+      className={`relative overflow-hidden transition-all duration-200 group ${className}`}
+      style={{ 
+        color: getTextColor(isActive, isMobile),
+        textShadow: isActive 
+          ? (theme === 'dark' 
+              ? '0 0 8px rgba(163, 230, 53, 0.5), 0 0 4px rgba(163, 230, 53, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4)'
+              : '0 0 6px rgba(163, 230, 53, 0.4), 0 0 3px rgba(163, 230, 53, 0.2), 0 1px 2px rgba(0, 0, 0, 0.2)')
+          : 'none'
+      }}
       data-current={isActive}
     >
       <span className="block transition-transform duration-700 ease-out group-hover:-translate-y-full group-hover:opacity-0">
@@ -230,12 +237,19 @@ const Navbar = () => {
                   className="relative flex items-center px-3 py-2 text-sm font-medium transition-all duration-200"
                   onClick={() => setCurrentPage(item.name)}
                 >
-                  {/* Active page indicator */}
+                  {/* Active page indicator with reduced size and glow */}
                   {currentPage === item.name && (
-                    <div className="absolute -left-1 w-2 h-2 bg-lime-400 rounded-full"></div>
+                    <div 
+                      className="absolute -left-1 w-1.5 h-1.5 bg-lime-400 rounded-full"
+                      style={{
+                        boxShadow: theme === 'dark' 
+                          ? '0 0 8px rgba(163, 230, 53, 0.8), 0 0 4px rgba(163, 230, 53, 0.6), 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          : '0 0 6px rgba(163, 230, 53, 0.7), 0 0 3px rgba(163, 230, 53, 0.5), 0 1px 2px rgba(0, 0, 0, 0.2)'
+                      }}
+                    ></div>
                   )}
                   
-                  {/* Text with rolling pin hover effect */}
+                  {/* Text with rolling pin hover effect and glow */}
                   <RollingText 
                     isActive={currentPage === item.name}
                     className="ml-1"
@@ -332,9 +346,16 @@ const Navbar = () => {
                 setCurrentPage(item.name);
               }}
             >
-              {/* Active page indicator for mobile */}
+              {/* Active page indicator for mobile with reduced size and glow */}
               {currentPage === item.name && (
-                <div className="w-2 h-2 bg-lime-400 rounded-full mr-3"></div>
+                <div 
+                  className="w-1.5 h-1.5 bg-lime-400 rounded-full mr-3"
+                  style={{
+                    boxShadow: theme === 'dark' 
+                      ? '0 0 8px rgba(163, 230, 53, 0.8), 0 0 4px rgba(163, 230, 53, 0.6), 0 1px 2px rgba(0, 0, 0, 0.3)'
+                      : '0 0 6px rgba(163, 230, 53, 0.7), 0 0 3px rgba(163, 230, 53, 0.5), 0 1px 2px rgba(0, 0, 0, 0.2)'
+                  }}
+                ></div>
               )}
               
               {/* Text with rolling pin effect for mobile */}
