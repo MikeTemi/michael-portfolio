@@ -57,29 +57,29 @@ const ScrollingDivider = () => {
         className="relative py-8 overflow-hidden"
         style={{
           background: isDarkMode 
-            ? 'linear-gradient(90deg, rgba(15, 15, 15, 0.005) 0%, rgba(15, 15, 15, 0.03) 50%, rgba(15, 15, 15, 0.005) 100%)'
-            : 'linear-gradient(90deg, rgba(255, 255, 255, 0.005) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.005) 100%)',
+            ? 'linear-gradient(90deg, rgba(10, 10, 10, 0.005) 0%, rgba(10, 10, 10, 0.03) 50%, rgba(10, 10, 10, 0.005) 100%)'
+            : 'linear-gradient(90deg, rgba(250, 250, 250, 0.005) 0%, rgba(250, 250, 250, 0.03) 50%, rgba(250, 250, 250, 0.005) 100%)',
           backdropFilter: 'blur(0.5px)',
           WebkitBackdropFilter: 'blur(0.5px)',
         }}
       >
         {/* Left edge shadow overlay */}
         <div 
-          className="absolute left-0 top-0 bottom-0 w-20 md:w-48 z-10 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-40 md:w-80 lg:w-96 z-10 pointer-events-none"
           style={{
             background: isDarkMode 
-              ? 'linear-gradient(to right, rgba(15, 15, 15, 0.98) 0%, rgba(15, 15, 15, 0.9) 30%, rgba(15, 15, 15, 0.7) 60%, rgba(15, 15, 15, 0.4) 80%, transparent 100%)'
-              : 'linear-gradient(to right, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 30%, rgba(255, 255, 255, 0.7) 60%, rgba(255, 255, 255, 0.4) 80%, transparent 100%)'
+              ? 'linear-gradient(to right, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.88) 15%, rgba(10, 10, 10, 0.75) 25%, rgba(10, 10, 10, 0.55) 35%, rgba(10, 10, 10, 0.35) 50%, rgba(10, 10, 10, 0.18) 65%, rgba(10, 10, 10, 0.08) 75%, rgba(10, 10, 10, 0.03) 85%, rgba(10, 10, 10, 0.01) 95%, transparent 100%)'
+              : 'linear-gradient(to right, rgba(250, 250, 250, 0.95) 0%, rgba(250, 250, 250, 0.88) 15%, rgba(250, 250, 250, 0.75) 25%, rgba(250, 250, 250, 0.55) 35%, rgba(250, 250, 250, 0.35) 50%, rgba(250, 250, 250, 0.18) 65%, rgba(250, 250, 250, 0.08) 75%, rgba(250, 250, 250, 0.03) 85%, rgba(250, 250, 250, 0.01) 95%, transparent 100%)'
           }}
         />
         
         {/* Right edge shadow overlay */}
         <div 
-          className="absolute right-0 top-0 bottom-0 w-20 md:w-48 z-10 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-40 md:w-80 lg:w-96 z-10 pointer-events-none"
           style={{
             background: isDarkMode 
-              ? 'linear-gradient(to left, rgba(15, 15, 15, 0.98) 0%, rgba(15, 15, 15, 0.9) 30%, rgba(15, 15, 15, 0.7) 60%, rgba(15, 15, 15, 0.4) 80%, transparent 100%)'
-              : 'linear-gradient(to left, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 30%, rgba(255, 255, 255, 0.7) 60%, rgba(255, 255, 255, 0.4) 80%, transparent 100%)'
+              ? 'linear-gradient(to left, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.88) 15%, rgba(10, 10, 10, 0.75) 25%, rgba(10, 10, 10, 0.55) 35%, rgba(10, 10, 10, 0.35) 50%, rgba(10, 10, 10, 0.18) 65%, rgba(10, 10, 10, 0.08) 75%, rgba(10, 10, 10, 0.03) 85%, rgba(10, 10, 10, 0.01) 95%, transparent 100%)'
+              : 'linear-gradient(to left, rgba(250, 250, 250, 0.95) 0%, rgba(250, 250, 250, 0.88) 15%, rgba(250, 250, 250, 0.75) 25%, rgba(250, 250, 250, 0.55) 35%, rgba(250, 250, 250, 0.35) 50%, rgba(250, 250, 250, 0.18) 65%, rgba(250, 250, 250, 0.08) 75%, rgba(250, 250, 250, 0.03) 85%, rgba(250, 250, 250, 0.01) 95%, transparent 100%)'
           }}
         />
 
