@@ -162,7 +162,7 @@ const Navbar = () => {
   const logoSize = useTransform(
     scrollProgress,
     [0, 0.3, 0.7, 1],
-    [SIZES.LOGO_SIZE.NORMAL, SIZES.LOGO_SIZE.COMPACT, 14, 12] // Even smaller final size
+    [20, 16, 12, 10] // Made initial sizes smaller: 20px start instead of 24px
   );
 
   const navTextSize = useTransform(
@@ -410,6 +410,17 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Top Shadow Overlay for Fade Effect */}
+      <div 
+        className="fixed top-0 left-0 w-full z-40 pointer-events-none"
+        style={{
+          height: '120px',
+          background: theme === 'dark' 
+            ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 60%, transparent 100%)'
+        }}
+      />
     </>
   );
 };
