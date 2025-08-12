@@ -126,7 +126,13 @@ const Navbar = () => {
   const navWidth = useTransform(
     scrollProgress,
     [0, SCROLL_CONFIG.SCROLL_THRESHOLD, 1],
-    ['95%', '80%', '65%'] // Balanced for both mobile and desktop
+    ['95%', '75%', '55%'] // Reduced final width from 65% to 55%
+  );
+
+  const navHeight = useTransform(
+    scrollProgress,
+    [0, SCROLL_CONFIG.SCROLL_THRESHOLD, 1],
+    [64, 56, 48] // Gradually reduce height from 64px to 48px
   );
   
   const borderRadius = useTransform(
@@ -156,31 +162,37 @@ const Navbar = () => {
   const logoSize = useTransform(
     scrollProgress,
     [0, 0.3, 0.7, 1],
-    [SIZES.LOGO_SIZE.NORMAL, SIZES.LOGO_SIZE.COMPACT, SIZES.LOGO_SIZE.COMPACT - 3, SIZES.LOGO_SIZE.COMPACT - 5] // More gradual and significant reduction
+    [SIZES.LOGO_SIZE.NORMAL, SIZES.LOGO_SIZE.COMPACT, 14, 12] // Even smaller final size
+  );
+
+  const navTextSize = useTransform(
+    scrollProgress,
+    [0, 0.5, 1],
+    [14, 12, 10] // Smaller final state: 10px instead of 12px
   );
 
   const buttonSize = useTransform(
     scrollProgress,
     [0, 1],
-    [SIZES.BUTTON_SIZE.NORMAL, SIZES.BUTTON_SIZE.COMPACT]
+    [SIZES.BUTTON_SIZE.NORMAL, 28] // Smaller button for reduced height
   );
 
   const iconSize = useTransform(
     scrollProgress,
     [0, 1],
-    [SIZES.ICON_SIZE.NORMAL, SIZES.ICON_SIZE.COMPACT]
+    [SIZES.ICON_SIZE.NORMAL, 14] // Smaller icons
   );
 
   const mobileIconSize = useTransform(
     scrollProgress,
     [0, 1],
-    [SIZES.MOBILE_ICON_SIZE.NORMAL, SIZES.MOBILE_ICON_SIZE.COMPACT]
+    [SIZES.MOBILE_ICON_SIZE.NORMAL, 18] // Smaller mobile icons
   );
 
   const mobileButtonPadding = useTransform(
     scrollProgress,
     [0, SCROLL_CONFIG.SCROLL_THRESHOLD, 1],
-    ['8px', '6px', '6px']
+    ['8px', '6px', '4px'] // Reduced padding for smaller height
   );
 
   return (
@@ -189,6 +201,7 @@ const Navbar = () => {
         className="fixed top-4 left-1/2 z-50 rounded-full bg-transparent"
         style={{
           width: navWidth,
+          height: navHeight,
           x: '-50%',
           backgroundColor: useTransform(
             backgroundOpacity,
@@ -214,11 +227,10 @@ const Navbar = () => {
         }}
         transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
       >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <motion.div 
-          className="flex items-center justify-between relative"
+          className="flex items-center justify-between relative h-full"
           style={{
-            height: SIZES.NAVBAR_HEIGHT,
             paddingLeft: padding,
             paddingRight: padding
           }}
@@ -226,13 +238,16 @@ const Navbar = () => {
         >
           
           {/* Logo - Left */}
-          <div className="flex-shrink-0 z-10">
+          <div className="flex-shrink-0 z-10 flex items-center">
             <motion.a 
               href="/" 
-              className="font-bold hover:text-lime-400 transition-all duration-500 ease-out"
+              className="hover:text-lime-400 transition-all duration-500 ease-out"
               style={{ 
                 color: theme === 'dark' ? COLORS.DARK.LOGO : COLORS.LIGHT.LOGO,
                 fontSize: logoSize
+              }}
+              transition={{ 
+                fontSize: { duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }
               }}
             >
               MS
@@ -243,10 +258,11 @@ const Navbar = () => {
           <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10">
             <div className="flex items-center space-x-1">
               {navItems.map((item) => (
-                <a
+                <motion.a
                   key={item.name}
                   href={item.href}
-                  className="relative flex items-center px-3 py-2 text-sm font-medium transition-all duration-200"
+                  className="relative flex items-center px-3 py-2 font-medium transition-all duration-200"
+                  style={{ fontSize: navTextSize }}
                   onClick={() => setCurrentPage(item.name)}
                 >
                   {/* Active page indicator with reduced size and glow */}
@@ -268,7 +284,7 @@ const Navbar = () => {
                   >
                     {item.name}
                   </RollingText>
-                </a>
+                </motion.a>
               ))}
             </div>
           </div>
