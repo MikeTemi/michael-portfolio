@@ -6,27 +6,26 @@ import { Hand, MoveUpRight } from 'lucide-react';
 const Hero = () => {
   const [isWaving, setIsWaving] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isButtonHovered, setIsButtonHovered] = useState(false);
 
   // Constants for better maintainability
   const WAVE_DURATION = 1600;
   const WAVE_INTERVAL = 3000;
   const FADE_OVERLAY_HEIGHT = 80;
   
-  // Color constants
+  // Color constants - now using shadcn/ui CSS variables
   const colors = {
-    primary: 'hsl(82.7, 78%, 55.5%)',
+    primary: 'hsl(var(--primary))', // Your lime accent color
     text: {
-      light: isDarkMode ? '#a3a3a3' : '#404040',
-      main: isDarkMode ? '#f5f5f5' : '#1f2937',
-      mainSecondary: isDarkMode ? 'hsl(0,0%,63.9%)' : '#1f2937', // New color for non-accent text in second text
+      light: 'hsl(var(--muted-foreground))', // Light text
+      main: 'hsl(var(--foreground))', // Main text
+      mainSecondary: isDarkMode ? 'hsl(0,0%,63.9%)' : 'hsl(var(--foreground))', // Custom secondary for Hero
     },
     background: {
-      light: isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(255, 255, 255)',
-      neutral: isDarkMode ? '#262626' : '#f5f5f5',
+      light: 'hsl(var(--background))',
+      neutral: 'hsl(var(--muted))',
     },
-    border: isDarkMode ? '#a3a3a3' : '#525252',
-    line: isDarkMode ? '#525252' : '#d4d4d8',
+    border: 'hsl(var(--border))',
+    line: 'hsl(var(--border))',
   };
 
   // Auto-wave every 3 seconds
@@ -85,22 +84,13 @@ const Hero = () => {
   // Reusable button component
   const AnimatedButton = ({ className = "" }: { className?: string }) => (
     <button 
-      className={`relative overflow-hidden px-6 py-3 border rounded-lg transition-all duration-500 ease-in-out group ${className}`}
-      style={{
-        borderColor: colors.border,
-        backgroundColor: isButtonHovered ? colors.background.neutral : 'transparent',
-        color: isButtonHovered
-          ? (isDarkMode ? colors.text.main : colors.background.light)
-          : colors.text.light
-      }}
-      onMouseEnter={() => setIsButtonHovered(true)}
-      onMouseLeave={() => setIsButtonHovered(false)}
+      className={`relative overflow-hidden px-6 py-3 border border-border bg-transparent text-muted-foreground hover:bg-foreground hover:text-background rounded-full transition-all duration-500 ease-out group text-sm ${className}`}
     >
       <div className="relative">
-        <span className="block transition-transform duration-500 ease-in-out group-hover:-translate-y-full group-hover:opacity-0">
+        <span className="block transition-all duration-500 ease-out group-hover:-translate-y-full group-hover:opacity-0">
           Know me better
         </span>
-        <span className="absolute inset-0 flex items-center justify-center translate-y-full opacity-0 transition-all duration-500 ease-in-out group-hover:translate-y-0 group-hover:opacity-100">
+        <span className="absolute inset-0 flex items-center justify-center translate-y-full opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
           About me
         </span>
       </div>
@@ -128,11 +118,10 @@ const Hero = () => {
           onMouseLeave={() => setIsWaving(false)}
         >
           <Hand 
-            className={`mr-2 transition-transform duration-300 ease-in-out ${
+            className={`mr-2 transition-transform duration-300 ease-in-out text-lime-400 ${
               isWaving ? 'animate-wave' : ''
             } group-hover:animate-wave`}
             size={28}
-            style={{ color: colors.primary }}
           />
           <span className="font-medium">
             Hey! It's me Michael
@@ -146,7 +135,7 @@ const Hero = () => {
         <div className="mr-0 md:mr-[30vw] mt-8">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
             <span style={{ color: colors.text.mainSecondary }}>
-              Learning out loud, <span style={{ color: colors.primary }}>building boldly</span>, and solving for the real world.
+              Learning out loud, <span className="text-lime-400">building boldly</span>, and solving for the real world.
             </span>
           </h1>
         </div>
